@@ -49,7 +49,7 @@ const App = props => {
 
   const charSelectHandler = event => {
     const charId = event.target.value;
-    selectedCharacter(charId);
+    selectCharacter(charId);
   };
 
   const destructionHandler = () => {

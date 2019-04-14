@@ -1,12 +1,35 @@
-import React, { Component } from 'react';
+
+//Converting the Char Picker Component we need to handle
+//its apiCall inside componentDidMount,
+//HOOKS provides us useEffect to handle such a task
+import React, { useState, useEffect } from 'react';
 
 import './CharPicker.css';
 
-class CharPicker extends Component {
-  state = { characters: [], isLoading: false };
+const CharPicker = props => {
 
-  componentDidMount() {
-    this.setState({ isLoading: true });
+  //We create a pair [pieceOfState, handlerMethod]
+  //setting the initialValue forEach pieceOfState
+  const [ characters, setCharacters ] = useState([]);
+  const [ isLoading, setIsLoading ] =  useState(false);
+
+  //ComponentDidMount gets replaced from useEffect,
+  //ATTENTION: useEffect() by itself gets called
+  //EVERYTIME we submit a change to the state
+  //and always after React rendered this component,
+  //to make sure this gets executed only once we add
+  //a second argument -> useEffect(actionFunction, secondArgument)
+  //this is an array of dependencies. We declare in this array
+  //WICH VALUES TO FOLLOW THAT WILL TRIGGER useEffect execution
+  //by passing an empty array we ensure that useEffect gets called
+  //once after the component was mounted and never again
+  useEffect(() => {
+
+    //we execute our api call same as before with
+    //componentDidMount, handling the state with
+    //methods generated from useState
+    setIsLoading(true);
+
     fetch('https://swapi.co/api/people')
       .then(response => {
         if (!response.ok) {
@@ -15,35 +38,39 @@ class CharPicker extends Component {
         return response.json();
       })
       .then(charData => {
+
         const selectedCharacters = charData.results.slice(0, 5);
-        this.setState({
-          characters: selectedCharacters.map((char, index) => ({
-            name: char.name,
-            id: index + 1
-          })),
-          isLoading: false
-        });
+
+        //again "useState generated methods"
+        setCharacters(selectedCharacters.map((char, index) => ({
+          name: char.name,
+          id: index + 1
+        })));
+
+        setIsLoading(false);
+
       })
       .catch(err => {
         console.log(err);
       });
-  }
+  }, []);//here the second argument, noValuesToMonitor === useEffectExecutesOnce
 
-  render() {
+    //Again we use our constants instead of recalling this.state
+    //props are directly passed so noMore this.props.something
     let content = <p>Loading characters...</p>;
 
     if (
-      !this.state.isLoading &&
-      this.state.characters &&
-      this.state.characters.length > 0
+      !isLoading &&
+      characters &&
+      characters.length > 0
     ) {
       content = (
         <select
-          onChange={this.props.onCharSelect}
-          value={this.props.selectedChar}
-          className={this.props.side}
+          onChange={props.onCharSelect}
+          value={props.selectedChar}
+          className={props.side}
         >
-          {this.state.characters.map(char => (
+          {characters.map(char => (
             <option key={char.id} value={char.id}>
               {char.name}
             </option>
@@ -51,13 +78,13 @@ class CharPicker extends Component {
         </select>
       );
     } else if (
-      !this.state.isLoading &&
-      (!this.state.characters || this.state.characters.length === 0)
+      !isLoading &&
+      (!characters || characters.length === 0)
     ) {
       content = <p>Could not fetch any data.</p>;
     }
     return content;
-  }
+
 }
 
 export default CharPicker;
