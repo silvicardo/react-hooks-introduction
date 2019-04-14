@@ -16,13 +16,18 @@ const App = props => {
   //[ the previous state, function to handle state ]
 
   //Using array destructuring we get both elements in constants from useState
-  //at first we define the state as an object, it will reside in
+  //at first we define the state as value or any type we want, it will reside in
   //the state constant, setState function will be used to handle the state value
-  const [state, setState] = useState({
-    selectedCharacter: 1,
-    side: 'light',
-    destroyed: false
-  })
+
+  //IN THIS COMMIT we are going to manage
+  //each piece of state in different constants
+  //so we destructure each time useState forEach
+  //value we want to manage in this component
+
+  //[pieceOfState, functionToChangeJustThisValue] = setInitial(value)
+  const [selectedCharacter, selectCharacter] = useState('1')
+  const [side, selectSide] = useState('light')
+  const [destroyed, startDestruction] = useState(false)
 
   //********** WARNING ********//
   //setState in Hooks IS NOT THE SAME AS the classic setState
@@ -33,33 +38,34 @@ const App = props => {
   //1 -> manually merge the changes - ex. setState({...state, myChanges})
   //2 -> set different constants for each value that must be handled
 
-  //IN THIS COMMIT WE EXPLORE THE FIRST WAY
+  //IN THIS COMMIT WE EXPLORE THE SECOND WAY
 
   //functional component can't have function but must store them in variables
-  //To handle state we use the setState constant destructured from useState
+  //To handle each piece of state we use the setState function(we called it differently everyTime)
+  //each function will manage just a piece of state!
   const sideHandler = side => {
-    setState({ ...state, side: side });
+    selectSide(side);
   };
 
   const charSelectHandler = event => {
     const charId = event.target.value;
-    setState({ ...state, selectedCharacter: charId });
+    selectedCharacter(charId);
   };
 
   const destructionHandler = () => {
-    setState({ ...state, destroyed: true });
+    startDestruction(true);
   };
 
-  //Now everytime we want to read a state value we have our state constant
-  //functions are stored in constants too
+  //Now everytime we want to read a  piece of state we have constant to read from
+  //functions are stored in constants too as in the first way
     let content = (
       <React.Fragment>
         <CharPicker
           side={state.side}
-          selectedChar={state.selectedCharacter}
+          selectedChar={selectedCharacter}
           onCharSelect={charSelectHandler}
         />
-        <Character selectedChar={state.selectedCharacter} />
+        <Character selectedChar={selectedCharacter} />
         {/*
           We still use bind to pass an argument to the function
           while nost still executing it, PASSING THIS OR NULL
@@ -69,13 +75,13 @@ const App = props => {
           Light Side
         </button>
         <button onClick={sideHandler.bind(this, 'dark')}>Dark Side</button>
-        {state.side === 'dark' && (
+        {side === 'dark' && (
           <button onClick={destructionHandler}>DESTROY!</button>
         )}
       </React.Fragment>
     );
 
-    if (state.destroyed) {
+    if (destroyed) {
       content = <h1>Total destruction!</h1>;
     }
 
