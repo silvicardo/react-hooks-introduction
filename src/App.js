@@ -61,7 +61,7 @@ const App = props => {
     let content = (
       <React.Fragment>
         <CharPicker
-          side={state.side}
+          side={side}
           selectedChar={selectedCharacter}
           onCharSelect={charSelectHandler}
         />
