@@ -45,26 +45,26 @@ const Character = props =>  {
     }
   }, []);
 
-    //now we prepare content to present
-    let content = <p>Loading Character...</p>;
+  //now we prepare content to present
+  let content = <p>Loading Character...</p>;
 
-    if (!isLoading && loadedCharacter.id) {
-      content = (
-        <Summary
-          name={loadedCharacter.name}
-          gender={loadedCharacter.gender}
-          height={loadedCharacter.height}
-          hairColor={loadedCharacter.colors.hair}
-          skinColor={loadedCharacter.colors.skin}
-          movieCount={loadedCharacter.movieCount}
-        />
-      );
-    } else if (!isLoading && !loadedCharacter.id) {
-      content = <p>Failed to fetch character.</p>;
-    }
+  if (!isLoading && loadedCharacter.id) {
+    content = (
+      <Summary
+        name={loadedCharacter.name}
+        gender={loadedCharacter.gender}
+        height={loadedCharacter.height}
+        hairColor={loadedCharacter.colors.hair}
+        skinColor={loadedCharacter.colors.skin}
+        movieCount={loadedCharacter.movieCount}
+      />
+    );
+  } else if (!isLoading && !loadedCharacter.id) {
+    content = <p>Failed to fetch character.</p>;
+  }
 
-    //and return
-    return content;
+  //and return
+  return content;
 
 }
 

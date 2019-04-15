@@ -2,88 +2,66 @@
 //Converting the Char Picker Component we need to handle
 //its apiCall inside componentDidMount,
 //HOOKS provides us useEffect to handle such a task
-import React, { useState, useEffect } from 'react';
+//REFACTORING ON TO USE OUR CUSTOM HOOK!
+//CharPicker will:
+import React from 'react';
+// -> fetch api via our custom httpHook(no more useState needed, data comes from httpHookResults)
+import {httpHook} from '../hooks/httpHook';
 
 import './CharPicker.css';
 
 const CharPicker = props => {
 
-  //We create a pair [pieceOfState, handlerMethod]
-  //setting the initialValue forEach pieceOfState
-  const [ characters, setCharacters ] = useState([]);
-  const [ isLoading, setIsLoading ] =  useState(false);
+  //CUSTOM HOOKS MUST BE IMPLEMENTED ON TOP LEVEL OF THE FUNCTIONAL COMPONENT!!!!!
+  //we pass the requested arguments:
+  //-> url for the request
+  //-> array of dependencies that will (thanks to useEffect) manage the need for a refresh-request
+  //like a regular hook we destructure results
+  //-> is Loading:  state of request
+  //-> charData: data returned from the request
+  //this Hook gets to replace componentDidMount + componentDidUpdate
+  //componentDidMount -> executes httpRequest after the component is loaded first time
+  //componentDidUpdate -> based on dependencies changes performs operation in this hook
+  const [isLoading, charData] = httpHook('https://swapi.co/api/people',
+                                        [/* empty because no need to refresh after first load*/])
 
-  //ComponentDidMount gets replaced from useEffect,
-  //ATTENTION: useEffect() by itself gets called
-  //EVERYTIME we submit a change to the state
-  //and always after React rendered this component,
-  //to make sure this gets executed only once we add
-  //a second argument -> useEffect(actionFunction, secondArgument)
-  //this is an array of dependencies. We declare in this array
-  //WICH VALUES TO FOLLOW THAT WILL TRIGGER useEffect execution
-  //by passing an empty array we ensure that useEffect gets called
-  //once after the component was mounted and never again
-  useEffect(() => {
+  //if charData is NOT NULL then manage data
+  const characters = (charData && charData.results
+        .slice(0, 5) //get first 5 results
+        .map((char, index) => ({ //forEach create an object
+          name: char.name,       //with character name
+          id: index + 1          //and character id
+        }))) || []; //else characters = []
 
-    //we execute our api call same as before with
-    //componentDidMount, handling the state with
-    //methods generated from useState
-    setIsLoading(true);
+  //Data to fill the content of the component come
+  //from httpHook results manipulation and props
+  let content = <p>Loading characters...</p>;
 
-    fetch('https://swapi.co/api/people')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch.');
-        }
-        return response.json();
-      })
-      .then(charData => {
-
-        const selectedCharacters = charData.results.slice(0, 5);
-
-        //again "useState generated methods"
-        setCharacters(selectedCharacters.map((char, index) => ({
-          name: char.name,
-          id: index + 1
-        })));
-
-        setIsLoading(false);
-
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }, []);//here the second argument, noValuesToMonitor === useEffectExecutesOnce
-
-    //Again we use our constants instead of recalling this.state
-    //props are directly passed so noMore this.props.something
-    let content = <p>Loading characters...</p>;
-
-    if (
-      !isLoading &&
-      characters &&
-      characters.length > 0
-    ) {
-      content = (
-        <select
-          onChange={props.onCharSelect}
-          value={props.selectedChar}
-          className={props.side}
-        >
-          {characters.map(char => (
-            <option key={char.id} value={char.id}>
-              {char.name}
-            </option>
-          ))}
-        </select>
-      );
-    } else if (
-      !isLoading &&
-      (!characters || characters.length === 0)
-    ) {
-      content = <p>Could not fetch any data.</p>;
-    }
-    return content;
+  if (
+    !isLoading &&
+    characters &&
+    characters.length > 0
+  ) {
+    content = (
+      <select
+        onChange={props.onCharSelect}
+        value={props.selectedChar}
+        className={props.side}
+      >
+        {characters.map(char => (
+          <option key={char.id} value={char.id}>
+            {char.name}
+          </option>
+        ))}
+      </select>
+    );
+  } else if (
+    !isLoading &&
+    (!characters || characters.length === 0)
+  ) {
+    content = <p>Could not fetch any data.</p>;
+  }
+  return content;
 
 }
 
