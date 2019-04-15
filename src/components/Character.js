@@ -1,72 +1,38 @@
 //Character Component will:
-// -> manage state via useState
-// -> fetch api via useEffect
 // -> manage new rerenders monitoring props via useEffect and memo
-import React, { useState, useEffect, memo } from 'react';
+import React, { useEffect, memo } from 'react';
+// -> fetch api via our custom httpHook(no more useState needed, data comes from httpHookResults)
+import {httpHook} from '../hooks/httpHook';
 
 import Summary from './Summary';
 
 //Again this becomes a functional component and receives props
 const Character = props =>  {
 
-  //State is managed via useState
-  const [loadedCharacter, setLoadedCharacter] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  //CUSTOM HOOKS MUST BE IMPLEMENTED ON TOP LEVEL OF THE FUNCTIONAL COMPONENT!!!!!
+  //we pass the requested arguments:
+  //-> url for the request
+  //-> array of dependencies that will (thanks to useEffect) manage the need for a refresh-request
+  //like a regular hook we destructure results
+  //-> is Loading:  state of request
+  //-> charData: data returned from the request
+  //this Hook gets to replace componentDidMount + componentDidUpdate
+  //componentDidMount -> executes httpRequest after the component is loaded first time
+  //componentDidUpdate -> based on dependencies changes performs operation in this hook
+  const [isLoading, charData] = httpHook('https://swapi.co/api/people/' + props.selectedChar, [props.selectedChar])
 
-  //fetchData gets stored in a constant
-  const fetchData = () => {
-
-    //props gets called directly
-    //state is managed via useState destructured functions
-    console.log(
-      'Sending Http request for new character with id ' +
-        props.selectedChar
-    );
-    setIsLoading(true);
-
-    fetch('https://swapi.co/api/people/' + props.selectedChar)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Could not fetch person!');
-        }
-        return response.json();
-      })
-      .then(charData => {
-        const loadedCharacter = {
-          id: props.selectedChar,
-          name: charData.name,
-          height: charData.height,
-          colors: {
-            hair: charData.hair_color,
-            skin: charData.skin_color
-          },
-          gender: charData.gender,
-          movieCount: charData.films.length
-        };
-
-        setLoadedCharacter(loadedCharacter)
-        setIsLoading(false)
-      })
-      .catch(err => {
-        console.log(err);
-        setIsLoading(false)
-      });
-  };
-
-  //componentDidMount replaced with useEffect
-  //This time we want the component to be updated(rerendered)
-  //everytime the prop containing the character id
-  //changes, we do that including that prop in
-  //the dependencies array. This replaces componentDidUpdate.
-  useEffect(() =>  {
-    fetchData();
-
-    //we can place a check, this replaces componentDidUpdate + componentWillUnmount
-    return () => {
-      console.log('this mimics componentDidUpdate + componentWillUnmount');
-
-    }
-  }, [props.selectedChar]);
+  //if charData is NOT NULL we fill with data otherwise loadedCharacter = {}
+  const loadedCharacter = (charData && {
+    id: props.selectedChar,
+    name: charData.name,
+    height: charData.height,
+    colors: {
+      hair: charData.hair_color,
+      skin: charData.skin_color
+    },
+    gender: charData.gender,
+    movieCount: charData.films.length
+  }) || {}
 
   //we can mimic the behaviour of componentWillUnmount
   //by placing an handler that will get executed before
