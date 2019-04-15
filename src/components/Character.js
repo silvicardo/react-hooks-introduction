@@ -13,15 +13,6 @@ const Character = props =>  {
   const [loadedCharacter, setLoadedCharacter] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   console.log('shouldComponentUpdate');
-  //   return (
-  //     nextProps.selectedChar !== props.selectedChar ||
-  //     nextState.loadedCharacter.id !== this.state.loadedCharacter.id ||
-  //     nextState.isLoading !== this.state.isLoading
-  //   );
-  // }
-
   //fetchData gets stored in a constant
   const fetchData = () => {
 
